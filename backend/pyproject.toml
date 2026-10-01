@@ -8,8 +8,10 @@ dependencies = [
     "django>=5.2,<6",
     "django-environ>=0.12",
     "djangorestframework>=3.16",
+    "gunicorn>=26.2.0",
     "pillow>=12.3.0",
     "psycopg[binary]>=3.2",
+    "whitenoise>=6.12.0",
 ]
 
 [dependency-groups]

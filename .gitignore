@@ -5,6 +5,7 @@ __pycache__/
 .ruff_cache/
 backend/.env
 backend/staticfiles/
+backend/frontend_dist/
 backend/media/
 
 # Node
