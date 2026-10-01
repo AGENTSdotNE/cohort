@@ -1,0 +1,12 @@
+{% extends 'emails/base.html' %}
+
+{% block heading %}You are all set{% endblock %}
+
+{% block content %}
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.6">
+    Your email address is confirmed{% if user.full_name %}, {{ user.full_name }}{% endif %}. You can sign in whenever you are ready.
+  </p>
+  <p style="margin:0">
+    {% include 'emails/_button.html' with label='Go to the app' %}
+  </p>
+{% endblock %}

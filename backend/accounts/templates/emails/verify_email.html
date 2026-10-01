@@ -1,0 +1,13 @@
+{% extends 'emails/base.html' %}
+
+{% block heading %}Confirm your email address{% endblock %}
+
+{% block content %}
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.6">
+    Thanks for signing up. Confirm your email address to finish setting up your account.
+  </p>
+  <p style="margin:0 0 16px">
+    {% include 'emails/_button.html' with label='Confirm email address' %}
+  </p>
+  <p style="margin:0;font-size:13px;color:#71717a;word-break:break-all">{{ link }}</p>
+{% endblock %}

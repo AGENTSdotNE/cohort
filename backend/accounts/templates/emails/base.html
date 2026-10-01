@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <body style="margin:0;padding:24px;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#18181b">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #e4e4e7;border-radius:8px">
+      <tr>
+        <td style="padding:32px">
+          <h1 style="margin:0 0 16px;font-size:20px;line-height:1.3">{% block heading %}{{ subject }}{% endblock %}</h1>
+          {% block content %}{% endblock %}
+          <p style="margin:32px 0 0;font-size:12px;color:#71717a">
+            If you were not expecting this email you can safely ignore it.
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

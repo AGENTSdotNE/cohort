@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.ruff_cache/
+backend/.env
+backend/staticfiles/
+backend/media/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Tooling
+.DS_Store
+*.local
+*.tsbuildinfo
+coverage/
+.playwright-cli/
