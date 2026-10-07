@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -16,6 +17,12 @@ class PasswordResetView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        if not settings.EMAIL_ENABLED:
+            return Response(
+                {'detail': 'Password reset by email is not available yet. Please contact support.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
         serializer = EmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = User.objects.filter(email__iexact=serializer.validated_data['email'], is_active=True).first()

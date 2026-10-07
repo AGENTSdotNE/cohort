@@ -1,16 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { z } from 'zod'
 
 import { FormField } from '@/components/form-field'
 import { Button } from '@/components/ui/button'
+import { setSessionUser } from '@/lib/query-client'
 import { useApiForm } from '@/lib/use-api-form'
 
 import { signUp } from './api'
 import { AuthCard } from './auth-card'
 import { AuthForm } from './auth-form'
 import { PASSWORD_HINT, passwordSchema } from './password-rules'
+import { useSession } from './use-session'
 
 const schema = z.object({
   full_name: z.string().trim().min(1, 'Enter your name'),
@@ -21,13 +23,19 @@ const schema = z.object({
 type Values = z.infer<typeof schema>
 
 export const SignUpPage = () => {
+  const { data: user } = useSession()
+
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: { full_name: '', email: '', password: '' },
   })
   const { submit, error, succeeded, isSubmitting } = useApiForm(form, async (values) => {
-    await signUp(values)
+    const newUser = await signUp(values)
+    // Deployments without email skip verification and sign the new account in straight away.
+    if (newUser.email_verified) setSessionUser(newUser)
   })
+
+  if (user) return <Navigate to="/" replace />
 
   if (succeeded) {
     return (

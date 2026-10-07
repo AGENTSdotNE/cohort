@@ -2,11 +2,12 @@ import js from '@eslint/js'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
+import storybook from 'eslint-plugin-storybook'
 import { globalIgnores } from 'eslint/config'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'storybook-static']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -32,4 +33,5 @@ export default tseslint.config(
       'react-refresh/only-export-components': 'off',
     },
   },
+  storybook.configs['flat/recommended'],
 )

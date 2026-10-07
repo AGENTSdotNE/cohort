@@ -14,5 +14,41 @@ services:
       interval: 5s
       retries: 10
 
+  backend:
+    image: ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+    working_dir: /app
+    command: sh -c "uv sync && uv run python manage.py migrate && uv run python manage.py runserver 0.0.0.0:8000"
+    environment:
+      DATABASE_URL: postgres://cohort:cohort@db:5432/cohort
+      # The frontend container reaches Django by its service name, so that host must be allowed too.
+      ALLOWED_HOSTS: localhost,127.0.0.1,backend
+      # Kept outside /app so the container never uses the .venv built for your own machine.
+      UV_PROJECT_ENVIRONMENT: /venv
+      UV_LINK_MODE: copy
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./backend:/app
+      - backend-venv:/venv
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: node:24-slim
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      VITE_BACKEND_URL: http://backend:8000
+    ports:
+      - '5173:5173'
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    depends_on:
+      - backend
+
 volumes:
   cohort-db:
+  backend-venv:
+  frontend-node-modules:

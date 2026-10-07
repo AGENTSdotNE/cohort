@@ -1,4 +1,5 @@
 from django.core import mail
+from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -23,6 +24,16 @@ class PasswordResetTests(APITestCase):
         response = self.client.post('/api/auth/password-reset/', {'email': 'nobody@example.com'}, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(mail.outbox), before)
+
+    @override_settings(EMAIL_ENABLED=False)
+    def test_without_email_a_reset_asks_people_to_contact_support(self):
+        before = len(mail.outbox)
+
+        response = self.client.post('/api/auth/password-reset/', {'email': self.user.email}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
+        self.assertIn('contact support', response.data['detail'])
         self.assertEqual(len(mail.outbox), before)
 
     def test_the_link_sets_a_new_password(self):

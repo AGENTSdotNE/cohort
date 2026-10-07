@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core import mail
+from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -53,6 +54,17 @@ class SignUpTests(APITestCase):
             self.client.post('/api/auth/sign-up/', {'email': 'new@example.com', 'password': PASSWORD}, format='json')
 
         self.assertFalse(get_user_model().objects.filter(email='new@example.com').exists())
+
+    @override_settings(EMAIL_ENABLED=False)
+    def test_without_email_the_account_is_verified_and_signed_in_with_no_email(self):
+        response = self.client.post(
+            '/api/auth/sign-up/', {'email': 'new@example.com', 'password': PASSWORD}, format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['email_verified'])
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(self.client.get('/api/auth/me/').status_code, status.HTTP_200_OK)
 
 
 class VerifyEmailTests(APITestCase):

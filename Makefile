@@ -1,11 +1,14 @@
-.PHONY: install db backend frontend test format migrate superuser
+.PHONY: install dev db backend frontend storybook test format migrate superuser
 
 install:
 	cd backend && uv sync
 	cd frontend && npm install
 
+dev:
+	docker compose up
+
 db:
-	docker compose up -d
+	docker compose up -d db
 
 migrate:
 	cd backend && uv run python manage.py migrate
@@ -18,6 +21,9 @@ backend:
 
 frontend:
 	cd frontend && npm run dev
+
+storybook:
+	cd frontend && npm run storybook
 
 test:
 	cd backend && uv run ruff check . && uv run ruff format --check . && uv run python manage.py test

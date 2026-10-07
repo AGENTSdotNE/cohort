@@ -1,4 +1,5 @@
-from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.contrib.auth import get_user_model, login
 from django.db import transaction
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -20,7 +21,13 @@ class SignUpView(APIView):
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        send_verification_email(user)
+
+        if settings.EMAIL_ENABLED:
+            send_verification_email(user)
+        else:
+            user.email_verified = True
+            user.save(update_fields=['email_verified'])
+            login(request, user)
 
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
