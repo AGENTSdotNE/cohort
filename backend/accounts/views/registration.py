@@ -25,8 +25,6 @@ class SignUpView(APIView):
         if settings.EMAIL_ENABLED:
             send_verification_email(user)
         else:
-            user.email_verified = True
-            user.save(update_fields=['email_verified'])
             login(request, user)
 
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
@@ -52,6 +50,12 @@ class ResendVerificationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        if not settings.EMAIL_ENABLED:
+            return Response(
+                {'detail': 'Confirmation emails are not available yet. You can sign in without confirming.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
         serializer = EmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = User.objects.filter(email__iexact=serializer.validated_data['email'], email_verified=False).first()

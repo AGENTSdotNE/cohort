@@ -5,7 +5,7 @@ import { z } from 'zod'
 
 import { FormField } from '@/components/form-field'
 import { Button } from '@/components/ui/button'
-import { setSessionUser } from '@/lib/query-client'
+import { queryClient, SESSION_KEY } from '@/lib/query-client'
 import { useApiForm } from '@/lib/use-api-form'
 
 import { signUp } from './api'
@@ -30,9 +30,9 @@ export const SignUpPage = () => {
     defaultValues: { full_name: '', email: '', password: '' },
   })
   const { submit, error, succeeded, isSubmitting } = useApiForm(form, async (values) => {
-    const newUser = await signUp(values)
-    // Deployments without email skip verification and sign the new account in straight away.
-    if (newUser.email_verified) setSessionUser(newUser)
+    await signUp(values)
+    // Deployments without email sign the new account in straight away, so ask who is signed in now.
+    await queryClient.refetchQueries({ queryKey: SESSION_KEY })
   })
 
   if (user) return <Navigate to="/" replace />

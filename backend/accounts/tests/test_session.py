@@ -1,3 +1,4 @@
+from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -51,6 +52,16 @@ class SessionTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('Confirm your email address', str(response.data))
+
+    @override_settings(EMAIL_ENABLED=False)
+    def test_without_email_an_unverified_account_can_sign_in(self):
+        create_user(email='unverified@example.com', verified=False)
+
+        response = self.client.post(
+            '/api/auth/sign-in/', {'email': 'unverified@example.com', 'password': PASSWORD}, format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_me_is_rejected_while_signed_out(self):
         self.assertEqual(self.client.get('/api/auth/me/').status_code, status.HTTP_401_UNAUTHORIZED)

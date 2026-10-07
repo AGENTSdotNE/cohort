@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
@@ -79,7 +80,7 @@ class SignInSerializer(serializers.Serializer):
         if user is None:
             raise serializers.ValidationError('Your email address or password is incorrect.')
 
-        if not user.email_verified:
+        if settings.EMAIL_ENABLED and not user.email_verified:
             raise serializers.ValidationError('Confirm your email address before signing in.')
 
         attrs['user'] = user

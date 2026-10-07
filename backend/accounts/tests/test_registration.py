@@ -56,13 +56,13 @@ class SignUpTests(APITestCase):
         self.assertFalse(get_user_model().objects.filter(email='new@example.com').exists())
 
     @override_settings(EMAIL_ENABLED=False)
-    def test_without_email_the_account_is_verified_and_signed_in_with_no_email(self):
+    def test_without_email_the_account_is_signed_in_with_no_email(self):
         response = self.client.post(
             '/api/auth/sign-up/', {'email': 'new@example.com', 'password': PASSWORD}, format='json'
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(response.data['email_verified'])
+        self.assertFalse(response.data['email_verified'])
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(self.client.get('/api/auth/me/').status_code, status.HTTP_200_OK)
 
@@ -98,3 +98,13 @@ class VerifyEmailTests(APITestCase):
         known = self.client.post('/api/auth/resend-verification/', {'email': 'new@example.com'}, format='json')
 
         self.assertEqual(unknown.status_code, known.status_code)
+
+    @override_settings(EMAIL_ENABLED=False)
+    def test_without_email_resending_says_you_can_sign_in_anyway(self):
+        before = len(mail.outbox)
+
+        response = self.client.post('/api/auth/resend-verification/', {'email': 'new@example.com'}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
+        self.assertIn('sign in without confirming', response.data['detail'])
+        self.assertEqual(len(mail.outbox), before)

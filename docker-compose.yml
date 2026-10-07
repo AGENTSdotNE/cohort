@@ -17,7 +17,7 @@ services:
   backend:
     image: ghcr.io/astral-sh/uv:python3.13-bookworm-slim
     working_dir: /app
-    command: sh -c "uv sync && uv run python manage.py migrate && uv run python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "uv sync --frozen && uv run python manage.py migrate && uv run python manage.py runserver 0.0.0.0:8000"
     environment:
       DATABASE_URL: postgres://cohort:cohort@db:5432/cohort
       # The frontend container reaches Django by its service name, so that host must be allowed too.
