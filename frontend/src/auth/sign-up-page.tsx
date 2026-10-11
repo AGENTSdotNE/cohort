@@ -5,7 +5,7 @@ import { z } from 'zod'
 
 import { FormField } from '@/components/form-field'
 import { Button } from '@/components/ui/button'
-import { queryClient, SESSION_KEY } from '@/lib/query-client'
+import { refetchSession } from '@/lib/query-client'
 import { useApiForm } from '@/lib/use-api-form'
 
 import { signUp } from './api'
@@ -29,15 +29,15 @@ export const SignUpPage = () => {
     resolver: zodResolver(schema),
     defaultValues: { full_name: '', email: '', password: '' },
   })
-  const { submit, error, succeeded, isSubmitting } = useApiForm(form, async (values) => {
+  const apiForm = useApiForm(form, async (values) => {
     await signUp(values)
     // Deployments without email sign the new account in straight away, so ask who is signed in now.
-    await queryClient.refetchQueries({ queryKey: SESSION_KEY })
+    await refetchSession()
   })
 
   if (user) return <Navigate to="/" replace />
 
-  if (succeeded) {
+  if (apiForm.succeeded) {
     return (
       <AuthCard
         title="Check your email"
@@ -66,13 +66,7 @@ export const SignUpPage = () => {
         </>
       }
     >
-      <AuthForm
-        submit={submit}
-        error={error}
-        isSubmitting={isSubmitting}
-        submitLabel="Create account"
-        pendingLabel="Creating account..."
-      >
+      <AuthForm apiForm={apiForm} submitLabel="Create account" pendingLabel="Creating account...">
         <FormField
           label="Full name"
           autoComplete="name"

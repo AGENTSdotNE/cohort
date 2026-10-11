@@ -1,4 +1,4 @@
-import { useSession } from '@/auth/use-session'
+import { useUser } from '@/auth/use-user'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 
@@ -10,9 +10,7 @@ import { ProfileForm } from './profile-form'
 type AccountDialogProps = { open: boolean; onOpenChange: (open: boolean) => void }
 
 export const AccountDialog = ({ open, onOpenChange }: AccountDialogProps) => {
-  const { data: user } = useSession()
-
-  if (!user) return null
+  const user = useUser()
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -23,8 +21,8 @@ export const AccountDialog = ({ open, onOpenChange }: AccountDialogProps) => {
         </DialogHeader>
 
         <AccountSection title="Profile" description="Your picture and name are shown in the app.">
-          <AvatarPicker user={user} />
-          <ProfileForm user={user} />
+          <AvatarPicker />
+          <ProfileForm />
         </AccountSection>
 
         <Separator />

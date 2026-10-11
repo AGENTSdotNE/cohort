@@ -27,7 +27,7 @@ export const SignInPage = () => {
   const destination = (location.state as { from?: string } | null)?.from ?? '/'
 
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { email: '', password: '' } })
-  const { submit, error, isSubmitting } = useApiForm(form, async ({ email, password }) => {
+  const apiForm = useApiForm(form, async ({ email, password }) => {
     setSessionUser(await signIn(email, password))
     void navigate(destination, { replace: true })
   })
@@ -48,9 +48,7 @@ export const SignInPage = () => {
       }
     >
       <AuthForm
-        submit={submit}
-        error={error}
-        isSubmitting={isSubmitting}
+        apiForm={apiForm}
         submitLabel="Sign in"
         pendingLabel="Signing in..."
         footer={

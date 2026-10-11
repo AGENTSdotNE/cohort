@@ -22,13 +22,13 @@ export const ResetPasswordPage = () => {
   const { uid, token } = useEmailLink()
 
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { password: '' } })
-  const { submit, error, succeeded, isSubmitting } = useApiForm(form, async ({ password }) => {
+  const apiForm = useApiForm(form, async ({ password }) => {
     await confirmPasswordReset(uid, token, password)
   })
 
   if (!uid || !token) return <IncompleteLinkCard />
 
-  if (succeeded) {
+  if (apiForm.succeeded) {
     return (
       <AuthCard title="Password changed" description="You can sign in with your new password.">
         <Button asChild className="w-full">
@@ -40,13 +40,7 @@ export const ResetPasswordPage = () => {
 
   return (
     <AuthCard title="Choose a new password">
-      <AuthForm
-        submit={submit}
-        error={error}
-        isSubmitting={isSubmitting}
-        submitLabel="Save new password"
-        pendingLabel="Saving..."
-      >
+      <AuthForm apiForm={apiForm} submitLabel="Save new password" pendingLabel="Saving...">
         <FormField
           label="New password"
           type="password"

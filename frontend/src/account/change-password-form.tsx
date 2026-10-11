@@ -5,6 +5,7 @@ import { z } from 'zod'
 
 import { PASSWORD_HINT, passwordSchema } from '@/auth/password-rules'
 import { FormField } from '@/components/form-field'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useApiForm } from '@/lib/use-api-form'
 
@@ -35,7 +36,7 @@ export const ChangePasswordForm = () => {
         label="Current password"
         type="password"
         autoComplete="current-password"
-        error={form.formState.errors.current_password ?? error}
+        error={form.formState.errors.current_password}
         registration={form.register('current_password')}
       />
       <FormField
@@ -46,6 +47,12 @@ export const ChangePasswordForm = () => {
         error={form.formState.errors.new_password}
         registration={form.register('new_password')}
       />
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       <Button type="submit" disabled={isSubmitting} className="justify-self-start">
         {isSubmitting ? 'Changing...' : 'Change password'}

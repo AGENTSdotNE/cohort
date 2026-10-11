@@ -10,6 +10,8 @@ export const SESSION_KEY = ['session']
 
 export const setSessionUser = (user: User) => queryClient.setQueryData(SESSION_KEY, user)
 
+export const refetchSession = () => queryClient.refetchQueries({ queryKey: SESSION_KEY })
+
 // Keeps the session entry, set to null, so RequireAuth redirects; drops everything the old user had loaded.
 export const clearSession = () => {
   queryClient.setQueryData(SESSION_KEY, null)
