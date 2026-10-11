@@ -30,9 +30,9 @@ cohort's problem and agreeing a manageable user journey.
 | Backend | Django 5.2, Django REST Framework, Postgres |
 | Frontend | React 19, Vite, TypeScript, Tailwind 4, shadcn/ui |
 | Components | shadcn/ui in `src/components/ui`, and Storybook for viewing components on their own |
-| Auth | Email and password, session cookies, email confirmation, password reset, change password |
+| Auth | Email and password, session cookies, change password. Email confirmation and password reset are built but switched off |
 | Uploads | Profile pictures, stored in `backend/media/` in development |
-| Email | Templated HTML email, printed to the terminal in development |
+| Email | Templated HTML email, off until `EMAIL_ENABLED=true` and an SMTP server are set |
 | Data | TanStack Query, a typed `apiRequest` wrapper, react-hook-form and zod |
 | Checks | ruff, Django tests, ESLint, Prettier and TypeScript, run locally and in GitHub Actions |
 
@@ -73,9 +73,8 @@ make frontend         # React on http://localhost:5173
 
 ### Your first account
 
-Open http://localhost:5173 and create an account. The confirmation email is printed in the **Django
-terminal** (the `make dev` output, if you use Docker), not sent, so nothing leaves your machine during
-development. Copy the link from there.
+Open http://localhost:5173 and create an account. Email is switched off, locally and on staging, so you are
+signed in straight away.
 
 Every setting has a working default. To change one, copy `backend/.env.example` to `backend/.env`.
 
@@ -84,7 +83,7 @@ Every setting has a working default. To change one, copy `backend/.env.example` 
 ```bash
 make test             # every check CI runs: ruff, migrations, Django tests, ESLint, Prettier, TypeScript, build
 make format           # fix formatting in the backend and the frontend
-make seed             # fictional accounts that sign in without the email step (needs make dev)
+make seed             # fictional accounts, including a staff one for /admin/ (needs make dev)
 make superuser        # create an admin account for http://localhost:8000/admin/ (needs make dev)
 make storybook        # browse components on their own at http://localhost:6006 (needs make dev)
 ```
@@ -111,6 +110,10 @@ The building blocks live in `frontend/src/components/ui`: alert, avatar, button,
 menu, input, label, separator, sheet, skeleton and sonner (toasts). They come from
 [shadcn/ui](https://ui.shadcn.com), which copies each component's source into the repo instead of installing
 a package. That means you own the code: read it, and change it if a design needs it.
+
+The design is yours. The sidebar, header and neutral palette are a starting point, not a house style: swap
+the sidebar for a top bar, change the layout, colours and type, or restyle any component, to whatever fits
+your users.
 
 - **Check before you build.** If `components/ui` or the [shadcn catalogue](https://ui.shadcn.com/docs/components)
   already has it, use that rather than writing your own.

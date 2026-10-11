@@ -41,7 +41,7 @@ export const DashboardPage = () => {
         <CardHeader>
           <CardTitle className="text-base">Your feature goes here</CardTitle>
           <CardDescription>
-            Authentication, email and the app shell are already done, so you can start on the problem itself.
+            Sign-in, accounts and the app shell are already done, so you can start on the problem itself.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-muted-foreground text-sm">

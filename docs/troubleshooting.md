@@ -38,10 +38,12 @@ Django cannot reach the database.
 A migration has not been run. Run `make migrate`, or restart `make dev`, which applies migrations as it starts.
 If you changed a model, run `uv run python manage.py makemigrations` in `backend/` first.
 
-## I signed up but never got the email
+## Where are the confirmation and password reset emails?
 
-In development, emails are not sent. They are printed in the `make dev` output, on lines starting
-`backend-1`. Scroll up and look for the link, or run `make seed` for accounts that skip this step. If it has expired, use **Resend confirmation** on the sign-in page.
+Email is switched off, locally and on staging, so signing up signs you straight in and the sign-in page
+hides "Forgotten your password?". If you forget a password, set a new one in Django admin, or run
+`make seed` for accounts with a known password. To try the email flows, set `EMAIL_ENABLED=true` in
+`backend/.env` and restart `make dev`: emails are then printed in its output, not sent.
 
 ## "The app can't load right now" or "The server had a problem"
 

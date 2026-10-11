@@ -43,6 +43,7 @@ class SessionTests(APITestCase):
 
         self.assertEqual(str(wrong_password.data), str(unknown.data))
 
+    @override_settings(EMAIL_ENABLED=True)
     def test_an_unverified_account_cannot_sign_in(self):
         create_user(email='unverified@example.com', verified=False)
 
@@ -71,6 +72,20 @@ class SessionTests(APITestCase):
         self.client.post('/api/auth/sign-out/')
 
         self.assertEqual(self.client.get('/api/auth/me/').status_code, status.HTTP_401_UNAUTHORIZED)
+
+    @override_settings(EMAIL_ENABLED=True)
+    def test_the_config_says_email_is_on(self):
+        response = self.client.get('/api/auth/config/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'email_enabled': True})
+
+    @override_settings(EMAIL_ENABLED=False)
+    def test_the_config_says_email_is_off_without_signing_in(self):
+        response = self.client.get('/api/auth/config/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'email_enabled': False})
 
     def test_the_csrf_endpoint_sets_the_cookie(self):
         response = self.client.get('/api/auth/csrf/')

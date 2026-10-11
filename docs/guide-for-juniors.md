@@ -8,11 +8,10 @@ The Cohort base app is the starting point for your six-week project: a working w
 
 When you first run it, this already works:
 
-- Sign up, confirm your email, sign in and sign out
-- Forgotten password, reset by email link
+- Sign up, sign in and sign out
 - Account settings: profile picture, name and password
 - An app shell with a sidebar, a mobile menu and a user menu
-- Emails, printed in your terminal while you develop
+- Email confirmation and password reset, switched off until the app can send real email
 - Automatic checks on every pull request
 
 Everything else is yours to build. The dashboard is deliberately empty, and your project plan says what goes there.
@@ -45,11 +44,11 @@ On Windows, Docker Desktop runs on WSL. Clone the repository inside WSL, not on 
 1. Clone your team's repository and move into it.
 2. `make dev` starts the database, Django and React together. The first start takes a few minutes.
 
-Open http://localhost:5173 and create an account. No email is really sent in development. Instead, look in the `make dev` output for lines starting `backend-1`: the confirmation email is printed there, with the link to click.
+Open http://localhost:5173 and create an account. You are signed in straight away: email is switched off, here and on staging, so there is no confirmation step.
 
 Leave `make dev` running while you work; both servers reload when you save a file. `Ctrl+C` stops everything.
 
-**Accounts without the email step.** With `make dev` running, `make seed` creates three fictional accounts that can sign in straight away: `alex@example.com`, `sam@example.com` and `staff@example.com`, which can also open Django admin. The password is printed when it runs. Two ordinary accounts are what you need to check one user cannot see another's data.
+**Ready-made accounts.** With `make dev` running, `make seed` creates three fictional accounts: `alex@example.com`, `sam@example.com` and `staff@example.com`, which can also open Django admin. The password is printed when it runs. Two ordinary accounts are what you need to check one user cannot see another's data.
 
 **Before your first pull request**, install two more tools so you can run the checks on your own machine:
 
@@ -77,29 +76,24 @@ Before reading any code, click through the app as a user would. Knowing what eac
 
 ```mermaid
 flowchart LR
-    A[Sign up] --> B[Email printed<br/>in Django terminal]
-    B --> C[Click link:<br/>email confirmed]
-    C --> D[Sign in]
-    D --> E[Dashboard]
+    A[Sign up] --> E[Dashboard]
+    D[Sign in] --> E
     E --> F[Account settings]
-    D -. forgot password .-> G[Reset by email]
-    G --> D
+    E --> S[Sign out]
 ```
 
-Signing up sends a confirmation link, and you can't sign in until you have clicked it. Every user journey is in the table below.
+Every user journey is in the table below.
 
 | Journey | Where to find it in the app | Frontend code |
 | --- | --- | --- |
 | Create an account | "Create one" on the sign-in page | `src/auth/sign-up-page.tsx` |
-| Confirm your email | The link in the email | `src/auth/verify-email-page.tsx` |
-| Get a new confirmation link | "Resend confirmation" on the sign-in page | `src/auth/resend-verification-page.tsx` |
 | Sign in | `/sign-in` | `src/auth/sign-in-page.tsx` |
-| Forgot your password | "Forgotten your password?" on the sign-in page | `src/auth/forgot-password-page.tsx` |
-| Choose a new password | The link in the reset email | `src/auth/reset-password-page.tsx` |
 | Change picture, name or password | User menu, top right, then "Account settings" | `src/account/account-dialog.tsx` |
 | Sign out | User menu, top right | `src/app/layout/user-menu.tsx` |
 
 Try the app on a narrow window too. Below tablet width the sidebar becomes a menu button in the header.
+
+The look and layout are a starting point, not a rule. Your team decides the design: keep the sidebar or swap it for a top bar, change the colours and type, and restyle any shadcn component, since its code lives in `src/components/ui`.
 
 Staff can also manage every user in Django admin at http://localhost:8000/admin/, after `make superuser` or `make seed`.
 
@@ -177,7 +171,7 @@ Sign-in uses a session cookie: after you sign in, the browser holds a cookie tha
 - **Protected pages.** Pages inside `RequireAuth` in `src/app/router.tsx` send signed-out visitors to the sign-in page.
 - **Protected endpoints.** Every Django view requires sign-in by default. A signed-out request gets a **401**, and the app sends you back to sign-in.
 - **CSRF protection.** Because the cookie is sent automatically, another website could try to make your browser send a request. Django blocks this by requiring a second token on every change, which `apiRequest` adds for you.
-- **Email links.** Confirmation and password reset links carry a signed token that expires after three days and works only once.
+- **Email links.** Email is off for now. When it is switched on, confirmation and password reset links carry a signed token that expires after three days and works only once.
 
 **401 or 403?** A 401 means you are not signed in. A 403 means you are signed in but not allowed to do that. Use 403 when you add rules about who can do what.
 
@@ -271,7 +265,6 @@ Most problems are one of a handful of known ones. Check this table, then `docs/t
 | `crypto.hash is not a function` | Your Node version is too old | `cd frontend && nvm install` |
 | Database connection refused | The database isn't running | Start `make dev` |
 | `make test` fails on formatting | Code isn't formatted | `make format`, then `make test` again |
-| No confirmation email | Emails aren't sent in development | Look for the link in the `backend-1` lines of the `make dev` output |
 
 **Where to look when something breaks:**
 

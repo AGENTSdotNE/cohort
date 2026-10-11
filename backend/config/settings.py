@@ -103,8 +103,8 @@ EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='no-reply@localhost')
-# Off by default on a deployment, where printed emails would lock everyone out at the confirmation step.
-EMAIL_ENABLED = env.bool('EMAIL_ENABLED', default=DEBUG)
+# Off until the app can send real email, so local and staging sign-up behave the same.
+EMAIL_ENABLED = env.bool('EMAIL_ENABLED', default=False)
 
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_HTTPONLY = True

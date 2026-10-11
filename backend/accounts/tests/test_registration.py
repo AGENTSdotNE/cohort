@@ -9,6 +9,7 @@ from rest_framework.test import APITestCase
 from .factories import PASSWORD, create_user, link_params
 
 
+@override_settings(EMAIL_ENABLED=True)
 class SignUpTests(APITestCase):
     def test_sign_up_creates_an_unverified_account_and_sends_one_email(self):
         response = self.client.post(
@@ -67,6 +68,7 @@ class SignUpTests(APITestCase):
         self.assertEqual(self.client.get('/api/auth/me/').status_code, status.HTTP_200_OK)
 
 
+@override_settings(EMAIL_ENABLED=True)
 class VerifyEmailTests(APITestCase):
     def setUp(self):
         self.client.post('/api/auth/sign-up/', {'email': 'new@example.com', 'password': PASSWORD}, format='json')

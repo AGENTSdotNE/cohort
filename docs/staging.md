@@ -5,8 +5,7 @@ try the journey without installing anything. Its link is at the top of the READM
 
 ## What works differently there
 
-- **No email.** Staging cannot send email, so signing up signs you straight in and the account counts as
-  confirmed. "Forgotten your password?" and "Resend confirmation" say email is not available.
+- **No email.** As on your machine, signing up signs you straight in.
 - **Forgotten passwords.** Ask a facilitator, who sets a new one in Django admin.
 - **Anyone with the link can sign up.** Use fictional data only, as you do locally.
 - **It runs `main`.** Every merge to `main` deploys once its CI checks pass, and migrations run as the app
@@ -46,7 +45,7 @@ data. Each team's repository is a fork of the base repository, such as `AGENTSdo
    | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` |
    | `SITE_NAME` | The team's app name |
 
-   With `DEBUG` off, email stays off unless you set `EMAIL_ENABLED=true`, and the app refuses to start
+   Email stays off unless you set `EMAIL_ENABLED=true`, and with `DEBUG` off the app refuses to start
    without `SECRET_KEY`.
 5. Generate a domain under the service's **Networking** settings, and put it at the top of the team's
    README.
