@@ -1,7 +1,7 @@
 # Guide for AI coding assistants
 
-This is a training project built by junior developers. Write code they can read, learn from and change
-without you.
+This is a training project. The people building on it range from students to working developers, and many
+are new to these tools. Write code they can read, learn from and change without you.
 
 ## Stack
 
