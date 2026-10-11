@@ -35,33 +35,41 @@ You should have the app running on your machine within an hour. If you are stuck
 | Tool | What it is for | Get it |
 | --- | --- | --- |
 | Git | Version control | [git-scm.com](https://git-scm.com/downloads) |
-| Docker | Runs the Postgres database for you | [docker.com](https://docs.docker.com/get-docker/) |
-| uv | Installs Python and the backend's packages | [docs.astral.sh/uv](https://docs.astral.sh/uv/) |
-| nvm | Installs the right version of Node.js | [github.com/nvm-sh/nvm](https://github.com/nvm-sh/nvm) |
+| Docker Desktop | Runs the database, Django and React for you | [docker.com](https://docs.docker.com/get-docker/) |
 | An editor | Writing code (VS Code is a good default) | [code.visualstudio.com](https://code.visualstudio.com/) |
 
-**Then, in a terminal:**
+On Windows, Docker Desktop runs on WSL. Clone the repository inside WSL, not on the Windows drive, and run every command from a WSL terminal.
+
+**Then, with Docker Desktop running:**
 
 1. Clone your team's repository and move into it.
-2. `cd frontend && nvm install && cd ..` picks the Node version the project needs.
-3. `make install` installs the backend and frontend packages.
-4. `make db` starts the database in Docker.
-5. `make migrate` creates the database tables.
+2. `make dev` starts the database, Django and React together. The first start takes a few minutes.
 
-**Every time you work on it**, open two terminals and run one command in each:
+Open http://localhost:5173 and create an account. No email is really sent in development. Instead, look in the `make dev` output for lines starting `backend-1`: the confirmation email is printed there, with the link to click.
 
-- `make backend` starts Django on port 8000.
-- `make frontend` starts the React app on port 5173.
+Leave `make dev` running while you work; both servers reload when you save a file. `Ctrl+C` stops everything.
 
-Open http://localhost:5173 and create an account. No email is really sent in development. Instead, look in the terminal running `make backend`: the confirmation email is printed there, with the link to click.
+**Accounts without the email step.** With `make dev` running, `make seed` creates three fictional accounts that can sign in straight away: `alex@example.com`, `sam@example.com` and `staff@example.com`, which can also open Django admin. The password is printed when it runs. Two ordinary accounts are what you need to check one user cannot see another's data.
+
+**Before your first pull request**, install two more tools so you can run the checks on your own machine:
+
+| Tool | What it is for | Get it |
+| --- | --- | --- |
+| uv | Installs Python and the backend's packages | [docs.astral.sh/uv](https://docs.astral.sh/uv/) |
+| nvm | Installs the right version of Node.js | [github.com/nvm-sh/nvm](https://github.com/nvm-sh/nvm) |
+
+Then run `cd frontend && nvm install && cd ..` and `make install` once. Your editor uses these packages too, so its type checking starts working.
 
 **Other commands you will use:**
 
 | Command | What it does |
 | --- | --- |
-| `make test` | Runs every check: formatting, linting, type checking and the backend tests. Run it before you push. |
+| `make test` | Runs every check CI runs: formatting, linting, the migration check, type checking, the backend tests and the frontend build. Run it before you push, with `make dev` running. |
 | `make format` | Fixes formatting problems for you. |
-| `make superuser` | Creates an admin account for Django admin at http://127.0.0.1:8000/admin/. |
+| `make migrate` | Applies new migrations. Run it after `makemigrations` while `make dev` is running. |
+| `make seed` | Creates the fictional accounts above. |
+| `make superuser` | Creates your own admin account for Django admin at http://localhost:8000/admin/. |
+| `make storybook` | Shows components on their own at http://localhost:6006, with `make dev` running. |
 
 ## A tour of the app
 
@@ -93,7 +101,7 @@ Signing up sends a confirmation link, and you can't sign in until you have click
 
 Try the app on a narrow window too. Below tablet width the sidebar becomes a menu button in the header.
 
-Staff can also manage every user in Django admin at http://127.0.0.1:8000/admin/, after `make superuser`.
+Staff can also manage every user in Django admin at http://localhost:8000/admin/, after `make superuser` or `make seed`.
 
 ## How the code is organised
 
@@ -255,21 +263,21 @@ Most problems are one of a handful of known ones. Check this table, then `docs/t
 
 | What you see | What it usually means | What to do |
 | --- | --- | --- |
-| "The app can't load right now" or "The server had a problem" | Django isn't running, or it crashed | Start `make backend`, or read the error at the bottom of its terminal |
-| "Could not reach the server" | Vite isn't running | Start `make frontend`, then reload |
+| "The app can't load right now" or "The server had a problem" | Django isn't running, or it crashed | Read the last `backend-1` lines in the `make dev` output, or restart `make dev` |
+| "Could not reach the server" | Vite isn't running | Check `make dev` is still running, then reload |
 | Sent back to the sign-in page | Your session ended | Sign in again |
 | `403 CSRF Failed: Origin checking failed` | The frontend is on a different port from the one Django expects | Set `FRONTEND_URL` and `CSRF_TRUSTED_ORIGINS` in `backend/.env` to the address in your browser |
 | `relation "..." does not exist` | A migration hasn't been run | `make migrate` (and `makemigrations` first if you changed a model) |
 | `crypto.hash is not a function` | Your Node version is too old | `cd frontend && nvm install` |
-| Database connection refused | The database isn't running | `make db` |
+| Database connection refused | The database isn't running | Start `make dev` |
 | `make test` fails on formatting | Code isn't formatted | `make format`, then `make test` again |
-| No confirmation email | Emails aren't sent in development | Look in the `make backend` terminal for the link |
+| No confirmation email | Emails aren't sent in development | Look for the link in the `backend-1` lines of the `make dev` output |
 
 **Where to look when something breaks:**
 
 1. **The browser console** (F12, then Console). Frontend errors show here.
 2. **The Network tab** (F12, then Network). Click the red request to see what Django answered.
-3. **The `make backend` terminal.** Every request is logged, and server errors print a full traceback. The last few lines name the file and line.
+3. **The `make dev` output.** Every request is logged on a `backend-1` line, and server errors print a full traceback. The last few lines name the file and line.
 
 When you ask for help, say what you did, what you expected, what happened instead, and paste the exact error.
 
