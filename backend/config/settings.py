@@ -10,8 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 environ.Env.read_env(BASE_DIR / '.env')
 
-SECRET_KEY = env('SECRET_KEY', default='dev-only-secret-key-do-not-use-in-production')
 DEBUG = env.bool('DEBUG', default=True)
+# The default key is public, so a deployment with DEBUG off refuses to start without its own.
+SECRET_KEY = env('SECRET_KEY', default='dev-only-secret-key-do-not-use-in-production' if DEBUG else environ.Env.NOTSET)
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
 INSTALLED_APPS = [
@@ -102,9 +103,22 @@ EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='no-reply@localhost')
-EMAIL_ENABLED = env.bool('EMAIL_ENABLED', default=True)
+# Off by default on a deployment, where printed emails would lock everyone out at the confirmation step.
+EMAIL_ENABLED = env.bool('EMAIL_ENABLED', default=DEBUG)
 
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=['http://localhost:5173'])
+# Railway ends HTTPS at its proxy, which says so in this header.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
+# With DEBUG off Django would otherwise drop server errors, so print them where the host's logs can see them.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {'console': {'class': 'logging.StreamHandler'}},
+    'loggers': {'django': {'handlers': ['console'], 'level': 'INFO'}},
+}

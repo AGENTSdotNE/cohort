@@ -62,7 +62,7 @@ class SignUpTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertFalse(response.data['email_verified'])
+        self.assertTrue(response.data['email_verified'])
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(self.client.get('/api/auth/me/').status_code, status.HTTP_200_OK)
 

@@ -12,6 +12,6 @@ COPY backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --frozen --no-dev
 COPY backend/ ./
 COPY --from=frontend /frontend/dist ./frontend_dist
-RUN uv run python manage.py collectstatic --noinput
+RUN uv run --no-sync python manage.py collectstatic --noinput
 
-CMD uv run python manage.py migrate && uv run gunicorn config.wsgi --bind 0.0.0.0:${PORT:-8000}
+CMD ["sh", "-c", "uv run --no-sync python manage.py migrate && exec uv run --no-sync gunicorn config.wsgi --bind 0.0.0.0:${PORT:-8000}"]

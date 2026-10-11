@@ -23,7 +23,7 @@ const firstMessage = (data: unknown): string | undefined => {
 
 const fallbackMessage = (status: number) =>
   status >= 500
-    ? 'The server had a problem. Check that make backend is running, and look in its terminal for the error.'
+    ? 'The server had a problem. Try again, and if it keeps happening, check the backend logs.'
     : `Request failed with status ${status}`
 
 export class ApiError extends Error {
@@ -68,7 +68,7 @@ export const apiRequest = async <T>(path: string, { method, body }: RequestOptio
     },
     body: encode(body),
   }).catch(() => {
-    throw new ApiError(0, 'Could not reach the server. Check your connection and that make frontend is running.')
+    throw new ApiError(0, 'Could not reach the server. Check your connection and try again.')
   })
 
   // The session has ended (it expired, or the password was changed on another device), so sign out here too.

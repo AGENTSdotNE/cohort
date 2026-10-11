@@ -1,7 +1,7 @@
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path
+from django.views.static import serve
 
 from .views import frontend_index
 
@@ -10,7 +10,7 @@ urlpatterns = [
     path('api/auth/', include('accounts.urls')),
 ]
 
-# Serves uploaded files while DEBUG is on. In production they belong in object storage, not on the web server.
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Django serves uploads itself so staging works too. A real production app keeps them in object storage.
+urlpatterns += [re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT})]
 
 urlpatterns += [re_path(r'^(?!api/|admin/|media/|static/).*$', frontend_index)]
