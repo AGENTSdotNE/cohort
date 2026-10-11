@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import login, logout
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -17,6 +18,13 @@ class CsrfView(APIView):
 
     def get(self, request):
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AuthConfigView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({'email_enabled': settings.EMAIL_ENABLED})
 
 
 class SignInView(APIView):

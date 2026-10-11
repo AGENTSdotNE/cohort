@@ -29,34 +29,41 @@ nvm use
 
 Django cannot reach the database.
 
-- Is it running? `docker compose ps` should show `db` as healthy. If not, run `make db`.
+- Is it running? `docker compose ps` should show `db` as healthy. If not, start `make dev`.
 - Is something else using port 5442? `lsof -i :5442` shows what. Stop it, or change the port in
   `docker-compose.yml` and `DATABASE_URL` in `backend/.env` together.
 
 ## `relation "..." does not exist`
 
-A migration has not been run. Run `make migrate`. If you changed a model, run
-`uv run python manage.py makemigrations` first.
+A migration has not been run. Run `make migrate`, or restart `make dev`, which applies migrations as it starts.
+If you changed a model, run `uv run python manage.py makemigrations` in `backend/` first.
 
-## I signed up but never got the email
+## Where are the confirmation and password reset emails?
 
-In development, emails are not sent. They are printed in the terminal running `make backend`. Scroll up
-and look for the link. If it has expired, use **Resend confirmation** on the sign-in page.
+Email is switched off, locally and on staging, so signing up signs you straight in and the sign-in page
+hides "Forgotten your password?". If you forget a password, set a new one in Django admin, or run
+`make seed` for accounts with a known password. To try the email flows, set `EMAIL_ENABLED=true` in
+`backend/.env` and restart `make dev`: emails are then printed in its output, not sent.
 
 ## "The app can't load right now" or "The server had a problem"
 
-Django is not running, or it crashed. The frontend needs both `make backend` and `make frontend` running
-at once, in two terminals. If `make backend` is running, its terminal shows the error: read the last
-lines of the traceback, which name the file and line that failed.
+Django is not running, or it crashed. Check that `make dev` is still running, then read the last
+`backend-1` lines in its output: the traceback names the file and line that failed.
 
 ## "Could not reach the server"
 
-The browser could not reach Vite at all. Check that `make frontend` is still running, then reload.
+The browser could not reach Vite at all. Check that `make dev` is still running, then reload.
 
 ## I keep getting sent back to the sign-in page
 
 Your session ended: it expired, you changed your password on another device, or the database was reset.
 Sign in again.
+
+## `Bind for 0.0.0.0:8000 failed: port is already allocated`
+
+Another program, often another project's Docker containers, is using a port this app needs (5173, 8000,
+5442 or 6006). `docker ps` lists running containers and their ports. Stop the one using it, or close the
+other program, then run `make dev` again.
 
 ## `make test` fails on formatting
 

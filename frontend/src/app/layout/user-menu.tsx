@@ -3,7 +3,7 @@ import { useState } from 'react'
 
 import { AccountDialog } from '@/account/account-dialog'
 import { signOut } from '@/auth/api'
-import { useSession } from '@/auth/use-session'
+import { useUser } from '@/auth/use-user'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -17,15 +17,13 @@ import { UserAvatar } from '@/components/user-avatar'
 import { clearSession } from '@/lib/query-client'
 
 export const UserMenu = () => {
-  const { data: user } = useSession()
+  const user = useUser()
   const [accountOpen, setAccountOpen] = useState(false)
 
   const leave = async () => {
     await signOut()
     clearSession()
   }
-
-  if (!user) return null
 
   return (
     <>

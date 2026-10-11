@@ -8,11 +8,10 @@ The Cohort base app is the starting point for your six-week project: a working w
 
 When you first run it, this already works:
 
-- Sign up, confirm your email, sign in and sign out
-- Forgotten password, reset by email link
+- Sign up, sign in and sign out
 - Account settings: profile picture, name and password
 - An app shell with a sidebar, a mobile menu and a user menu
-- Emails, printed in your terminal while you develop
+- Email confirmation and password reset, switched off until the app can send real email
 - Automatic checks on every pull request
 
 Everything else is yours to build. The dashboard is deliberately empty, and your project plan says what goes there.
@@ -35,33 +34,41 @@ You should have the app running on your machine within an hour. If you are stuck
 | Tool | What it is for | Get it |
 | --- | --- | --- |
 | Git | Version control | [git-scm.com](https://git-scm.com/downloads) |
-| Docker | Runs the Postgres database for you | [docker.com](https://docs.docker.com/get-docker/) |
-| uv | Installs Python and the backend's packages | [docs.astral.sh/uv](https://docs.astral.sh/uv/) |
-| nvm | Installs the right version of Node.js | [github.com/nvm-sh/nvm](https://github.com/nvm-sh/nvm) |
+| Docker Desktop | Runs the database, Django and React for you | [docker.com](https://docs.docker.com/get-docker/) |
 | An editor | Writing code (VS Code is a good default) | [code.visualstudio.com](https://code.visualstudio.com/) |
 
-**Then, in a terminal:**
+On Windows, Docker Desktop runs on WSL. Clone the repository inside WSL, not on the Windows drive, and run every command from a WSL terminal.
+
+**Then, with Docker Desktop running:**
 
 1. Clone your team's repository and move into it.
-2. `cd frontend && nvm install && cd ..` picks the Node version the project needs.
-3. `make install` installs the backend and frontend packages.
-4. `make db` starts the database in Docker.
-5. `make migrate` creates the database tables.
+2. `make dev` starts the database, Django and React together. The first start takes a few minutes.
 
-**Every time you work on it**, open two terminals and run one command in each:
+Open http://localhost:5173 and create an account. You are signed in straight away: email is switched off, here and on staging, so there is no confirmation step.
 
-- `make backend` starts Django on port 8000.
-- `make frontend` starts the React app on port 5173.
+Leave `make dev` running while you work; both servers reload when you save a file. `Ctrl+C` stops everything.
 
-Open http://localhost:5173 and create an account. No email is really sent in development. Instead, look in the terminal running `make backend`: the confirmation email is printed there, with the link to click.
+**Ready-made accounts.** With `make dev` running, `make seed` creates three fictional accounts: `alex@example.com`, `sam@example.com` and `staff@example.com`, which can also open Django admin. The password is printed when it runs. Two ordinary accounts are what you need to check one user cannot see another's data.
+
+**Before your first pull request**, install two more tools so you can run the checks on your own machine:
+
+| Tool | What it is for | Get it |
+| --- | --- | --- |
+| uv | Installs Python and the backend's packages | [docs.astral.sh/uv](https://docs.astral.sh/uv/) |
+| nvm | Installs the right version of Node.js | [github.com/nvm-sh/nvm](https://github.com/nvm-sh/nvm) |
+
+Then run `cd frontend && nvm install && cd ..` and `make install` once. Your editor uses these packages too, so its type checking starts working.
 
 **Other commands you will use:**
 
 | Command | What it does |
 | --- | --- |
-| `make test` | Runs every check: formatting, linting, type checking and the backend tests. Run it before you push. |
+| `make test` | Runs every check CI runs: formatting, linting, the migration check, type checking, the backend tests and the frontend build. Run it before you push, with `make dev` running. |
 | `make format` | Fixes formatting problems for you. |
-| `make superuser` | Creates an admin account for Django admin at http://127.0.0.1:8000/admin/. |
+| `make migrate` | Applies new migrations. Run it after `makemigrations` while `make dev` is running. |
+| `make seed` | Creates the fictional accounts above. |
+| `make superuser` | Creates your own admin account for Django admin at http://localhost:8000/admin/. |
+| `make storybook` | Shows components on their own at http://localhost:6006, with `make dev` running. |
 
 ## A tour of the app
 
@@ -69,31 +76,26 @@ Before reading any code, click through the app as a user would. Knowing what eac
 
 ```mermaid
 flowchart LR
-    A[Sign up] --> B[Email printed<br/>in Django terminal]
-    B --> C[Click link:<br/>email confirmed]
-    C --> D[Sign in]
-    D --> E[Dashboard]
+    A[Sign up] --> E[Dashboard]
+    D[Sign in] --> E
     E --> F[Account settings]
-    D -. forgot password .-> G[Reset by email]
-    G --> D
+    E --> S[Sign out]
 ```
 
-Signing up sends a confirmation link, and you can't sign in until you have clicked it. Every user journey is in the table below.
+Every user journey is in the table below.
 
 | Journey | Where to find it in the app | Frontend code |
 | --- | --- | --- |
 | Create an account | "Create one" on the sign-in page | `src/auth/sign-up-page.tsx` |
-| Confirm your email | The link in the email | `src/auth/verify-email-page.tsx` |
-| Get a new confirmation link | "Resend confirmation" on the sign-in page | `src/auth/resend-verification-page.tsx` |
 | Sign in | `/sign-in` | `src/auth/sign-in-page.tsx` |
-| Forgot your password | "Forgotten your password?" on the sign-in page | `src/auth/forgot-password-page.tsx` |
-| Choose a new password | The link in the reset email | `src/auth/reset-password-page.tsx` |
 | Change picture, name or password | User menu, top right, then "Account settings" | `src/account/account-dialog.tsx` |
 | Sign out | User menu, top right | `src/app/layout/user-menu.tsx` |
 
 Try the app on a narrow window too. Below tablet width the sidebar becomes a menu button in the header.
 
-Staff can also manage every user in Django admin at http://127.0.0.1:8000/admin/, after `make superuser`.
+The look and layout are a starting point, not a rule. Your team decides the design: keep the sidebar or swap it for a top bar, change the colours and type, and restyle any shadcn component, since its code lives in `src/components/ui`.
+
+Staff can also manage every user in Django admin at http://localhost:8000/admin/, after `make superuser` or `make seed`.
 
 ## How the code is organised
 
@@ -169,7 +171,7 @@ Sign-in uses a session cookie: after you sign in, the browser holds a cookie tha
 - **Protected pages.** Pages inside `RequireAuth` in `src/app/router.tsx` send signed-out visitors to the sign-in page.
 - **Protected endpoints.** Every Django view requires sign-in by default. A signed-out request gets a **401**, and the app sends you back to sign-in.
 - **CSRF protection.** Because the cookie is sent automatically, another website could try to make your browser send a request. Django blocks this by requiring a second token on every change, which `apiRequest` adds for you.
-- **Email links.** Confirmation and password reset links carry a signed token that expires after three days and works only once.
+- **Email links.** Email is off for now. When it is switched on, confirmation and password reset links carry a signed token that expires after three days and works only once.
 
 **401 or 403?** A 401 means you are not signed in. A 403 means you are signed in but not allowed to do that. Use 403 when you add rules about who can do what.
 
@@ -255,21 +257,20 @@ Most problems are one of a handful of known ones. Check this table, then `docs/t
 
 | What you see | What it usually means | What to do |
 | --- | --- | --- |
-| "The app can't load right now" or "The server had a problem" | Django isn't running, or it crashed | Start `make backend`, or read the error at the bottom of its terminal |
-| "Could not reach the server" | Vite isn't running | Start `make frontend`, then reload |
+| "The app can't load right now" or "The server had a problem" | Django isn't running, or it crashed | Read the last `backend-1` lines in the `make dev` output, or restart `make dev` |
+| "Could not reach the server" | Vite isn't running | Check `make dev` is still running, then reload |
 | Sent back to the sign-in page | Your session ended | Sign in again |
 | `403 CSRF Failed: Origin checking failed` | The frontend is on a different port from the one Django expects | Set `FRONTEND_URL` and `CSRF_TRUSTED_ORIGINS` in `backend/.env` to the address in your browser |
 | `relation "..." does not exist` | A migration hasn't been run | `make migrate` (and `makemigrations` first if you changed a model) |
 | `crypto.hash is not a function` | Your Node version is too old | `cd frontend && nvm install` |
-| Database connection refused | The database isn't running | `make db` |
+| Database connection refused | The database isn't running | Start `make dev` |
 | `make test` fails on formatting | Code isn't formatted | `make format`, then `make test` again |
-| No confirmation email | Emails aren't sent in development | Look in the `make backend` terminal for the link |
 
 **Where to look when something breaks:**
 
 1. **The browser console** (F12, then Console). Frontend errors show here.
 2. **The Network tab** (F12, then Network). Click the red request to see what Django answered.
-3. **The `make backend` terminal.** Every request is logged, and server errors print a full traceback. The last few lines name the file and line.
+3. **The `make dev` output.** Every request is logged on a `backend-1` line, and server errors print a full traceback. The last few lines name the file and line.
 
 When you ask for help, say what you did, what you expected, what happened instead, and paste the exact error.
 

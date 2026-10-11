@@ -59,7 +59,11 @@ Django REST Framework normally answers "not signed in" with 403. This project ch
 
 ## Email links
 
-Sign-up, "resend confirmation" and "forgot password" all email a link containing a `uid` and a `token`.
+Email is off by default (`EMAIL_ENABLED` in settings), locally and on staging. While it is off, sign-up
+signs people straight in, the sign-in page hides the email links, and the email endpoints answer 503.
+
+With it on, sign-up, "resend confirmation" and "forgot password" all email a link containing a `uid` and a
+`token`.
 
 - The `uid` is the user's id, encoded for a URL.
 - The `token` is signed with `SECRET_KEY` and expires after `PASSWORD_RESET_TIMEOUT` (three days).
@@ -74,10 +78,11 @@ The frontend page for the link posts both values back to Django, which checks th
 | Endpoint | Signed in? | Does |
 | --- | --- | --- |
 | `GET /api/auth/csrf/` | no | sets the CSRF cookie |
-| `POST /api/auth/sign-up/` | no | creates an unconfirmed account and emails a link |
+| `GET /api/auth/config/` | no | says whether email is switched on |
+| `POST /api/auth/sign-up/` | no | creates an account and signs in, or with email on, emails a confirmation link |
 | `POST /api/auth/verify-email/` | no | confirms the email from the link |
 | `POST /api/auth/resend-verification/` | no | emails a new confirmation link |
-| `POST /api/auth/sign-in/` | no | starts a session (confirmed accounts only) |
+| `POST /api/auth/sign-in/` | no | starts a session (confirmed accounts only, when email is on) |
 | `POST /api/auth/sign-out/` | no | ends the session |
 | `POST /api/auth/password-reset/` | no | emails a reset link |
 | `POST /api/auth/password-reset/confirm/` | no | sets a new password from the link |

@@ -16,7 +16,7 @@ backend/tasks/                  frontend/src/tasks/
   views.py        the endpoints   tasks-page.tsx    the page
   urls.py         the URLs        add-task-form.tsx a form that creates
   admin.py        /admin/ screen  task-list.tsx     loading, error, empty and list states
-  tests/          what must work  task-item.tsx     one row, which updates and deletes
+  tests/          what must work  task-item.tsx     one row, which ticks off and deletes
 ```
 
 Every feature gets its own Django app and its own frontend folder, named after the thing it manages.
@@ -28,10 +28,14 @@ Every feature gets its own Django app and its own frontend folder, named after t
 ```bash
 cd backend
 uv run python manage.py startapp tasks
+rm tasks/tests.py
 ```
 
-Add `'tasks'` to `INSTALLED_APPS` in [config/settings.py](../backend/config/settings.py), and include
-its URLs in [config/urls.py](../backend/config/urls.py):
+`startapp` makes a single `tests.py`, but this project keeps tests in a `tests/` folder, and Django
+cannot have both.
+
+Add `'tasks'` to `INSTALLED_APPS` in [config/settings.py](../backend/config/settings.py). In
+[config/urls.py](../backend/config/urls.py), add its URLs to `urlpatterns`, next to the `api/auth/` line:
 
 ```python
 path('api/', include('tasks.urls')),
@@ -60,12 +64,12 @@ class Task(models.Model):
         return self.title
 ```
 
-After changing a model, always run both, and commit the migration file it creates. CI fails if a model
-change has no migration.
+After changing a model, run both of these with `make dev` running, and commit the migration file it
+creates. CI fails if a model change has no migration.
 
 ```bash
 uv run python manage.py makemigrations
-uv run python manage.py migrate
+make migrate
 ```
 
 ### 3. The serializer
@@ -214,8 +218,8 @@ export const deleteTask = (id: number) => apiRequest<void>(`/tasks/${id}/`, { me
 `src/tasks/use-tasks.ts` wraps TanStack Query. `useTasks()` fetches the list and caches it under the key
 `['tasks']`. Any component can call it, and they all share one request.
 
-`useTaskMutation` wraps `useMutation`. When a change succeeds it invalidates `['tasks']`, so the list
-refetches and the screen matches the server. You never update the list by hand.
+`useTaskMutation` wraps `useMutation`. When a change finishes, whether it worked or not, it invalidates
+`['tasks']`, so the list refetches and the screen matches the server. You never update the list by hand.
 
 ```ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -229,7 +233,7 @@ export const useTasks = () => useQuery({ queryKey: TASKS_KEY, queryFn: fetchTask
 export const useTaskMutation = <TVariables>(mutationFn: (variables: TVariables) => Promise<unknown>) => {
   const queryClient = useQueryClient()
 
-  return useMutation({ mutationFn, onSuccess: () => queryClient.invalidateQueries({ queryKey: TASKS_KEY }) })
+  return useMutation({ mutationFn, onSettled: () => queryClient.invalidateQueries({ queryKey: TASKS_KEY }) })
 }
 ```
 
@@ -238,6 +242,12 @@ export const useTaskMutation = <TVariables>(mutationFn: (variables: TVariables) 
 A query is always loading, failed, empty, or has data. Handle all four:
 
 ```tsx
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Skeleton } from '@/components/ui/skeleton'
+
+import { TaskItem } from './task-item'
+import { useTasks } from './use-tasks'
+
 export const TaskList = () => {
   const { data: tasks, isPending, isError, error } = useTasks()
 
@@ -269,6 +279,18 @@ Forms use react-hook-form with a zod schema, and `useApiForm`, which puts any er
 the right field. The account settings forms in [src/account](../frontend/src/account) work the same way.
 
 ```tsx
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+
+import { FormField } from '@/components/form-field'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { useApiForm } from '@/lib/use-api-form'
+
+import { createTask } from './api'
+import { useTaskMutation } from './use-tasks'
+
 const schema = z.object({ title: z.string().trim().min(1, 'Give the task a title') })
 
 type Values = z.infer<typeof schema>
@@ -284,7 +306,14 @@ export const AddTaskForm = () => {
 
   return (
     <form onSubmit={submit} noValidate className="grid gap-3">
-      <FormField label="New task" error={form.formState.errors.title ?? error} registration={form.register('title')} />
+      <FormField label="New task" error={form.formState.errors.title} registration={form.register('title')} />
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       <Button type="submit" disabled={isSubmitting} className="justify-self-start">
         Add task
       </Button>
@@ -298,14 +327,33 @@ export const AddTaskForm = () => {
 Mutations live in the component that has the buttons. Show failures with a toast:
 
 ```tsx
+import { Check, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+
+import { deleteTask, type Task, updateTask } from './api'
+import { useTaskMutation } from './use-tasks'
+
 const showError = (error: Error) => toast.error(error.message)
 
 export const TaskItem = ({ task }: { task: Task }) => {
+  const toggle = useTaskMutation(() => updateTask(task.id, { done: !task.done }))
   const remove = useTaskMutation(() => deleteTask(task.id))
 
   return (
     <li className="flex items-center gap-3 px-4 py-2">
-      <span className="flex-1 text-sm">{task.title}</span>
+      <Button
+        variant="outline"
+        size="icon"
+        aria-label={task.done ? `Mark ${task.title} as not done` : `Mark ${task.title} as done`}
+        disabled={toggle.isPending}
+        onClick={() => toggle.mutate(undefined, { onError: showError })}
+      >
+        {task.done && <Check />}
+      </Button>
+      <span className={cn('flex-1 text-sm', task.done && 'text-muted-foreground line-through')}>{task.title}</span>
       <Button
         variant="ghost"
         size="icon"
@@ -322,10 +370,89 @@ export const TaskItem = ({ task }: { task: Task }) => {
 
 ### 12. The page, route and link
 
-The page just lays out the form and the list. Add a `<Route>` for it in
-[app/router.tsx](../frontend/src/app/router.tsx), inside the signed-in section next to the dashboard, and
-add a link to `LINKS` in [app/layout/app-nav.tsx](../frontend/src/app/layout/app-nav.tsx). The sidebar
-and the mobile menu both read that list.
+The page just lays out the form and the list:
+
+```tsx
+import { AddTaskForm } from './add-task-form'
+import { TaskList } from './task-list'
+
+export const TasksPage = () => (
+  <div className="mx-auto grid max-w-2xl gap-6">
+    <h1 className="text-2xl font-semibold">Tasks</h1>
+    <AddTaskForm />
+    <TaskList />
+  </div>
+)
+```
+
+Add a route for it in [app/router.tsx](../frontend/src/app/router.tsx), inside the signed-in section next
+to the dashboard:
+
+```tsx
+<Route path="tasks" element={<TasksPage />} />
+```
+
+Then add a link to `LINKS` in [app/layout/app-nav.tsx](../frontend/src/app/layout/app-nav.tsx), with an
+icon from `lucide-react`. The sidebar and the mobile menu both read that list.
+
+```tsx
+import { LayoutDashboard, ListTodo } from 'lucide-react'
+
+const LINKS = [
+  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/tasks', label: 'Tasks', icon: ListTodo },
+]
+```
+
+### 13. Sample data
+
+`make seed` creates fictional accounts. Give your feature fictional records too, so everyone on the team,
+and staging, starts from the same data. Add a command in your app,
+`tasks/management/commands/seed_tasks.py` (with an empty `__init__.py` in `management/` and in
+`commands/`):
+
+```python
+from django.core.management.base import BaseCommand
+
+from accounts.models import User
+from tasks.models import Task
+
+
+class Command(BaseCommand):
+    help = 'Create fictional tasks for the seed accounts.'
+
+    def handle(self, *args, **options):
+        alex = User.objects.get(email='alex@example.com')
+
+        for title in ['Book the minibus', 'Collect consent forms', 'Send the kit list']:
+            Task.objects.get_or_create(owner=alex, title=title)
+```
+
+Then add it to the `seed` line in the `Makefile`, after the accounts:
+
+```makefile
+seed:
+	docker compose exec backend uv run python manage.py seed
+	docker compose exec backend uv run python manage.py seed_tasks
+```
+
+If your brief came with a sample data file, save it in your app, such as `tasks/sample_data.csv`, and read
+it in the command instead of typing the records out. The column names come from the file's first row:
+
+```python
+import csv
+from pathlib import Path
+
+SAMPLE_DATA = Path(__file__).resolve().parents[2] / 'sample_data.csv'
+
+
+def handle(self, *args, **options):
+    alex = User.objects.get(email='alex@example.com')
+
+    with SAMPLE_DATA.open(newline='') as file:
+        for row in csv.DictReader(file):
+            Task.objects.get_or_create(owner=alex, title=row['title'])
+```
 
 ## Checklist before you open a pull request
 

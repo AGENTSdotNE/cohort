@@ -1,4 +1,4 @@
-import { useSession } from '@/auth/use-session'
+import { useUser } from '@/auth/use-user'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 const NEXT_STEPS = [
@@ -17,13 +17,13 @@ const NEXT_STEPS = [
 ]
 
 export const DashboardPage = () => {
-  const { data: user } = useSession()
+  const user = useUser()
 
   return (
     <div className="mx-auto max-w-4xl">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
       <p className="text-muted-foreground mt-1">
-        Signed in as {user?.email}. This page is deliberately empty, ready for whatever you build.
+        Signed in as {user.email}. This page is deliberately empty, ready for whatever you build.
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -41,7 +41,7 @@ export const DashboardPage = () => {
         <CardHeader>
           <CardTitle className="text-base">Your feature goes here</CardTitle>
           <CardDescription>
-            Authentication, email and the app shell are already done, so you can start on the problem itself.
+            Sign-in, accounts and the app shell are already done, so you can start on the problem itself.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-muted-foreground text-sm">

@@ -11,8 +11,8 @@ without you.
 
 ## Commands
 
-- `make test` runs ruff, the Django tests, ESLint, Prettier and the TypeScript check. It must pass
-  before any change is finished.
+- `make test` runs the same checks as CI: ruff, the migration check, the Django tests, ESLint, Prettier,
+  the TypeScript check and the frontend build. It must pass before any change is finished.
 - `make format` fixes formatting in both halves.
 - After changing a Django model, run `uv run python manage.py makemigrations` in `backend/`.
 
@@ -41,6 +41,8 @@ without you.
 ## Do not
 
 - Put API keys or secrets in frontend code. Call third-party APIs from Django.
-- Change `accounts/` or `frontend/src/auth/` unless the task is about sign-in.
+- Change `accounts/` or `frontend/src/auth/` unless the task is about sign-in, accounts or user roles.
 - Add new libraries without saying why. Use what is already installed first.
-- Commit, push, or edit `backend/.env`.
+- Commit or push unless asked. When asked, work on a branch and open a pull request. Never commit or push
+  to `main`.
+- Edit `backend/.env`.

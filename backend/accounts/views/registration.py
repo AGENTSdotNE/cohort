@@ -25,6 +25,9 @@ class SignUpView(APIView):
         if settings.EMAIL_ENABLED:
             send_verification_email(user)
         else:
+            # Nothing to confirm with, and it stops them being locked out if email is switched on later.
+            user.email_verified = True
+            user.save(update_fields=['email_verified'])
             login(request, user)
 
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)

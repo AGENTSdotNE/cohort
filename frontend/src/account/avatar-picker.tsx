@@ -2,14 +2,15 @@ import { useMutation } from '@tanstack/react-query'
 import { type ChangeEvent, useRef } from 'react'
 import { toast } from 'sonner'
 
-import type { User } from '@/auth/api'
+import { useUser } from '@/auth/use-user'
 import { Button } from '@/components/ui/button'
 import { UserAvatar } from '@/components/user-avatar'
 import { setSessionUser } from '@/lib/query-client'
 
 import { removeAvatar, uploadAvatar } from './api'
 
-export const AvatarPicker = ({ user }: { user: User }) => {
+export const AvatarPicker = () => {
+  const user = useUser()
   const fileInput = useRef<HTMLInputElement>(null)
 
   const onError = (error: Error) => toast.error(error.message)

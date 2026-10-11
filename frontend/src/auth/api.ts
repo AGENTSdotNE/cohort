@@ -21,3 +21,5 @@ export const requestPasswordReset = (email: string) => apiRequest<void>('/auth/p
 
 export const confirmPasswordReset = (uid: string, token: string, password: string) =>
   apiRequest<void>('/auth/password-reset/confirm/', { body: { uid, token, password } })
+
+export const fetchAuthConfig = () => apiRequest<{ email_enabled: boolean }>('/auth/config/')

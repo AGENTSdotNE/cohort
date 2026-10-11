@@ -24,9 +24,9 @@ type EmailRequestCardProps = {
 
 export const EmailRequestCard = ({ title, description, submitLabel, sentMessage, send }: EmailRequestCardProps) => {
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { email: '' } })
-  const { submit, error, succeeded, isSubmitting } = useApiForm(form, ({ email }) => send(email))
+  const apiForm = useApiForm(form, ({ email }) => send(email))
 
-  if (succeeded) {
+  if (apiForm.succeeded) {
     return (
       <AuthCard title="Check your email" description={sentMessage}>
         <Button asChild variant="outline" className="w-full">
@@ -39,9 +39,7 @@ export const EmailRequestCard = ({ title, description, submitLabel, sentMessage,
   return (
     <AuthCard title={title} description={description}>
       <AuthForm
-        submit={submit}
-        error={error}
-        isSubmitting={isSubmitting}
+        apiForm={apiForm}
         submitLabel={submitLabel}
         pendingLabel="Sending..."
         footer={

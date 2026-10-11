@@ -10,6 +10,7 @@ import { useApiForm } from '@/lib/use-api-form'
 import { signIn } from './api'
 import { AuthCard } from './auth-card'
 import { AuthForm } from './auth-form'
+import { SignInEmailLinks } from './sign-in-email-links'
 import { useSession } from './use-session'
 
 const schema = z.object({
@@ -27,7 +28,7 @@ export const SignInPage = () => {
   const destination = (location.state as { from?: string } | null)?.from ?? '/'
 
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { email: '', password: '' } })
-  const { submit, error, isSubmitting } = useApiForm(form, async ({ email, password }) => {
+  const apiForm = useApiForm(form, async ({ email, password }) => {
     setSessionUser(await signIn(email, password))
     void navigate(destination, { replace: true })
   })
@@ -47,23 +48,7 @@ export const SignInPage = () => {
         </>
       }
     >
-      <AuthForm
-        submit={submit}
-        error={error}
-        isSubmitting={isSubmitting}
-        submitLabel="Sign in"
-        pendingLabel="Signing in..."
-        footer={
-          <div className="text-muted-foreground flex flex-wrap justify-between gap-2 text-sm">
-            <Link to="/forgot-password" className="underline">
-              Forgotten your password?
-            </Link>
-            <Link to="/resend-verification" className="underline">
-              Resend confirmation
-            </Link>
-          </div>
-        }
-      >
+      <AuthForm apiForm={apiForm} submitLabel="Sign in" pendingLabel="Signing in..." footer={<SignInEmailLinks />}>
         <FormField
           label="Email address"
           type="email"

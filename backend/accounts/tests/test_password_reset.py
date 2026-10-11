@@ -8,6 +8,7 @@ from .factories import PASSWORD, create_user, link_params
 NEW_PASSWORD = 'a-completely-different-one'
 
 
+@override_settings(EMAIL_ENABLED=True)
 class PasswordResetTests(APITestCase):
     def setUp(self):
         self.user = create_user()
@@ -80,6 +81,7 @@ class PasswordResetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
+@override_settings(EMAIL_ENABLED=True)
 class UnverifiedPasswordResetTests(APITestCase):
     def test_resetting_confirms_the_email_so_the_account_can_sign_in(self):
         user = create_user(email='unverified@example.com', verified=False)
