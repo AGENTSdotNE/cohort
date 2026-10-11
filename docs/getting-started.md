@@ -1,4 +1,4 @@
-# Cohort base app: a guide for juniors
+# Cohort base app: getting started
 
 Sep 24, 2026 · @Kieran Riley
 

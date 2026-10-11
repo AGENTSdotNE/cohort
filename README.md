@@ -127,7 +127,7 @@ your users.
 
 ## Guides
 
-- **[A guide for juniors](docs/guide-for-juniors.md).** The whole app explained from scratch: setup, a tour, how it fits together.
+- **[Getting started](docs/getting-started.md).** The whole app explained from scratch: setup, a tour, how it fits together.
 - **[Adding a feature](docs/adding-a-feature.md).** Start here. It builds a small to-do list, step by step.
 - **[Sharing data between users](docs/sharing-data.md).** Shared records, roles and two people editing at once.
 - **[Staging](docs/staging.md).** Deploying to Railway, and what works differently there.
