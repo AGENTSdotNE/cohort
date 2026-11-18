@@ -35,3 +35,6 @@ test:
 format:
 	cd backend && uv run ruff check --fix . && uv run ruff format .
 	cd frontend && npm run format && npx eslint --fix .
+
+typecheck:
+	cd backend && uv run mypy .

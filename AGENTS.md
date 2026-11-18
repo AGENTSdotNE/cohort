@@ -13,7 +13,8 @@ are new to these tools. Write code they can read, learn from and change without 
 
 - `make test` runs the same checks as CI: ruff, the migration check, the Django tests, ESLint, Prettier,
   the TypeScript check and the frontend build. It must pass before any change is finished.
-- `make format` fixes formatting in both halves.
+- `make format` fixes formatting in both halves. It must be run before any change is finished.
+- `make typecheck` runs mypy on the backend. It must pass before any change is finished.
 - After changing a Django model, run `uv run python manage.py makemigrations` in `backend/`.
 
 ## Follow the existing patterns

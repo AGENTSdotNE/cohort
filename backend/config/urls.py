@@ -11,6 +11,6 @@ urlpatterns = [
 ]
 
 # Django serves uploads itself so staging works too. A real production app keeps them in object storage.
-urlpatterns += [re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT})]
+urlpatterns += [re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT})]  # type: ignore
 
-urlpatterns += [re_path(r'^(?!api/|admin/|media/|static/).*$', frontend_index)]
+urlpatterns += [re_path(r'^(?!api/|admin/|media/|static/).*$', frontend_index)]  # type: ignore

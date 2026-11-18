@@ -82,6 +82,7 @@ Every setting has a working default. To change one, copy `backend/.env.example` 
 
 ```bash
 make test             # every check CI runs: ruff, migrations, Django tests, ESLint, Prettier, TypeScript, build
+make typecheck        # run mypy on the backend
 make format           # fix formatting in the backend and the frontend
 make seed             # fictional accounts, including a staff one for /admin/ (needs make dev)
 make superuser        # create an admin account for http://localhost:8000/admin/ (needs make dev)
