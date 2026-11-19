@@ -1,10 +1,13 @@
-import { LayoutDashboard } from 'lucide-react'
+import { Inbox, LayoutDashboard } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
 
 // Add your own pages here as you build them. The sidebar and the mobile menu both read this list.
-const LINKS = [{ to: '/', label: 'Dashboard', icon: LayoutDashboard }]
+const LINKS = [
+  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/inbound', label: 'Inbound', icon: Inbox },
+]
 
 export const AppNav = ({ onNavigate }: { onNavigate?: () => void }) => (
   <nav className="grid gap-1 p-2">

@@ -7,6 +7,7 @@ import { ResetPasswordPage } from '@/auth/reset-password-page'
 import { SignInPage } from '@/auth/sign-in-page'
 import { SignUpPage } from '@/auth/sign-up-page'
 import { VerifyEmailPage } from '@/auth/verify-email-page'
+import { InboundPage } from '@/inbound/inbound-page'
 import { DashboardPage } from '@/pages/dashboard-page'
 
 import { AppShell } from './layout/app-shell'
@@ -25,6 +26,7 @@ export const AppRouter = () => (
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
           <Route index element={<DashboardPage />} />
+          <Route path="inbound" element={<InboundPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>
